@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HSR Run Search</title>
+  <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    /* [Your existing CSS stays unchanged] */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 500px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    label {
+      font-size: 14px;
+      color: #555;
+    }
+    select, input {
+      padding: 8px 10px;
+      margin: 5px 0 15px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    select {
+      width: 100%;
+    }
+    .small-input {
+      width: 70px;
+      text-align: center;
+    }
+    .checkbox-group {
+      margin-bottom: 15px;
+    }
+    .checkbox-group label {
+      display: block;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+    .checkbox-group input {
+      margin-right: 5px;
+    }
+    .output {
+      background: #f7f7f7;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 16px;
+      color: #333;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .output:hover {
+      background: #eaeaea;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .search-link {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .search-link a {
+      color: #007bff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .search-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container" v-if="loaded">
+      <h2>HSR Run Search</h2>
+
+      <div class="row">
+        <label for="eidolon">Eidolon:</label>
+        <input type="number" id="eidolon" min="0" class="small-input" v-model="eidolon">
+      </div>
+
+      <label for="category">Select Character:</label>
+      <select id="category" v-model="category">
+        <option v-for="cat in data.categories" :value="cat.zh">{{ cat.en }}</option>
+      </select>
+
+      <label for="gameMode">Select Game Mode:</label>
+      <select id="gameMode" v-model="gameMode">
+        <option value="">(Optional)</option>
+        <option v-for="mode in data.gameModes" :value="mode.zh">{{ mode.en }}</option>
+      </select>
+
+      <label for="boss">Select Boss:</label>
+      <select id="boss" v-model="boss">
+        <option value="">(Optional)</option>
+        <option v-for="b in data.bosses" :value="b.zh">{{ b.en }}</option>
+      </select>
+
+      <div class="row">
+        <label for="cost">Cost:</label>
+        <input type="number" id="cost" min="0" class="small-input" v-model="cost">
+      </div>
+
+      <label>Modifiers:</label>
+      <div class="checkbox-group">
+        <label v-for="mod in data.modifiers">
+          <input type="checkbox" :value="mod.zh" v-model="modifiers"> {{ mod.en }}
+        </label>
+      </div>
+
+      <div class="output" @click="copyToClipboard">
+        {{ output || "Click to copy" }}
+      </div>
+      <div class="search-link" v-if="output">
+        <a :href="searchUrl" target="_blank">View on Bilibili</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          data: {
+            categories: [],
+            gameModes: [],
+            bosses: [],
+            modifiers: []
+          },
+          eidolon: '',
+          category: '',
+          gameMode: '',
+          boss: '',
+          cost: '',
+          modifiers: [],
+          loaded: false
+        };
+      },
+      computed: {
+        output() {
+          let parts = [];
+          if (this.eidolon) parts.push(`${this.eidolon}命`);
+          if (this.category) parts.push(this.category);
+          if (this.gameMode) parts.push(this.gameMode);
+          if (this.boss) parts.push(this.boss);
+          if (this.cost) parts.push(`${this.cost}金`);
+          if (this.modifiers.length > 0) parts.push(this.modifiers.join(" "));
+          return parts.join(" ");
+        },
+        searchUrl() {
+          return "https://search.bilibili.com/all?keyword=" + encodeURIComponent(this.output);
+        }
+      },
+      methods: {
+        async fetchData() {
+          try {
+            const response = await fetch("data.json");
+            this.data = await response.json();
+            this.loaded = true;
+          } catch (e) {
+            console.error("Failed to load data:", e);
+          }
+        },
+        copyToClipboard() {
+          if (!this.output) return;
+          navigator.clipboard.writeText(this.output);
+          alert("Copied: " + this.output);
+        }
+      },
+      mounted() {
+        this.fetchData();
+      }
+    }).mount("#app");
+  </script>
+</body>
+</html>
