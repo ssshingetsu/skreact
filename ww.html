@@ -15,7 +15,7 @@
 
       <div class="space-y-4">
         <div class="flex items-center gap-4">
-          <label for="resonance" class="text-sm font-medium text-gray-700 w-1/3">Resonance Level</label>
+          <label for="resonance" class="text-sm font-medium text-gray-700 w-1/3">Sequence Level</label>
           <input
             type="number"
             id="resonance"
@@ -131,13 +131,20 @@
         async fetchData() {
           try {
             const response = await fetch("data.json");
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-            this.data = await response.json();
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const jsonData = await response.json();
+            // Validate the structure
+            if (!jsonData.resonators || !jsonData.gameModes || !jsonData.bosses) {
+              throw new Error("Invalid data structure in data.json");
+            }
+            this.data = jsonData;
             this.loaded = true;
             this.error = '';
           } catch (e) {
-            console.error("Failed to load data:", e);
-            this.error = "Failed to load data. Using fallback data.";
+            console.error("Fetch error details:", e);
+            this.error = `Failed to load data: ${e.message}. Using fallback data.`;
             this.data = {
               resonators: [
                 { en: "Jiyan", zh: "忌炎" },
