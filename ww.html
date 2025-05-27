@@ -130,14 +130,14 @@
       methods: {
         async fetchData() {
           try {
-            const response = await fetch("data.json");
+            const response = await fetch("ww.json");
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const jsonData = await response.json();
             // Validate the structure
             if (!jsonData.resonators || !jsonData.gameModes || !jsonData.bosses) {
-              throw new Error("Invalid data structure in data.json");
+              throw new Error("Invalid data structure in ww.json");
             }
             this.data = jsonData;
             this.loaded = true;
