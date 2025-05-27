@@ -130,7 +130,7 @@
       methods: {
         async fetchData() {
           try {
-            const response = await fetch("dataww.json");
+            const response = await fetch("ww.json");
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
             this.data = await response.json();
             this.loaded = true;
